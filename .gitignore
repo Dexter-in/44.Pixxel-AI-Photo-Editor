@@ -42,3 +42,11 @@ next-env.d.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# agent/tool configs
+.agents/
+.claude/
+.junie/
+.windsurf/
+skills-lock.json
+.convex/
