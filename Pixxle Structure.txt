@@ -1,0 +1,35 @@
+Here is an overview of your current **Pixxel** project structure:
+
+### 📂 Root Directory
+*   **`app/`**: The Next.js frontend (using App Router).
+*   **`convex/`**: Your backend logic, database schema, and API functions.
+*   **`public/`**: Static assets like logos and images.
+*   **`components/`**: Reusable UI components (like buttons, navbars, and common layouts).
+*   **`lib/`**: Utility functions and shared helpers (e.g., standard formatting).
+
+---
+
+### 🌐 Frontend (`app/`)
+*   **`(auth)/`**: Handles login and signup routes (likely using Clerk).
+*   **`(main)/dashboard/`**: The main page users see after logging in.
+*   **`editor/[projectId]/`**: The core editing interface where users modify their specific projects.
+*   **`convex-client-provider.jsx`**: A wrapper that lets your React components talk to the Convex backend.
+*   **`layout.js` & `globals.css`**: The main structure and global styling of the app.
+
+---
+
+### ⚙️ Backend (`convex/`)
+*   **`schema.js`**: The most important file for your database. It defines your tables (**users**, **projects**, **folders**) and their indexes for fast searching.
+*   **`project.js`**: Contains the API functions to **create**, **get**, and **delete** projects (which we just debugged).
+*   **`users.js`**: Handles user management, such as storing a user in the DB when they first log in.
+*   **`auth.config.js`**: Configures how Convex recognizes your authentication provider (Clerk).
+*   **`_generated/`**: Files automatically created by Convex (don't edit these manually).
+
+---
+
+### 📝 Key Configuration Files
+*   **`package.json`**: Lists your project dependencies (React, Next.js, Convex, Lucide icons, etc.).
+*   **`jsconfig.json`**: Helps with code suggestions and path aliases (like using `@/components`).
+*   **`next.config.mjs`**: Configuration for Next.js features and optimizations.
+
+**Is there a specific folder or file you want to dive deeper into?**

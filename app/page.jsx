@@ -1,3 +1,6 @@
+import FeaturesSection from "@/components/features";
+import InteractiveStats from "@/components/InteractiveStats";
+import PricingSection from "@/components/pricing";
 import { Button } from "@/components/ui/button";
 import HeroSection from "@/components/ui/hero";
 import Link from "next/link";
@@ -10,9 +13,12 @@ export default function Home() {
       {/* {Hero} */}
       <HeroSection />
       {/* {stats} */}
+      <InteractiveStats />
+      {/* <StatsSection /> */}
       {/* {features} */}
-      {/* {pricing}
-       */}
+      <FeaturesSection />
+      {/* {pricing} */}
+      <PricingSection />
 
 
       <section className="py-20 text-center">
