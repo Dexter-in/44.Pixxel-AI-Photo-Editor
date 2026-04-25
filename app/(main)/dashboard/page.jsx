@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Plus, Sparkles } from 'lucide-react'
 import { BarLoader } from 'react-spinners'
 import NewProjectModal from './_component/new-project-model'
+import ProjectGrid from './_component/project-grid'
+
 
 function Dashboard() {
 
@@ -35,7 +37,7 @@ function Dashboard() {
                 {isLoading ? (
                     <BarLoader width={'100%'} color="white" />
                 ) : projects && projects.length > 0 ? (
-                    <></>
+                    <ProjectGrid projects={projects} />
                 ) : (<div className="flex flex-col items-center justify-center py-20 text-center">
                     <h3 className="text-2xl font-semibold text-white mb-3">
                         Create Your First Project
@@ -59,7 +61,6 @@ function Dashboard() {
                 <NewProjectModal
                     isOpen={showNewProjectModel}
                     onClose={() => setShowNewProjectModel(false)}
-                    projectCount={projects?.length || 0}
                 />
             </div>
         </div>

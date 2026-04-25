@@ -40,7 +40,7 @@ export const useConvexQuery = (query, ...args) => {
 }
 
 //custom hook for mutation
-export const useConvexMutation = (mutation) => {
+export const useConvexQueryMutation = (mutation) => {
     // mutation from convex
     const mutationFn = useMutation(mutation)
 

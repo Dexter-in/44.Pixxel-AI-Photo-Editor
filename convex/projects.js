@@ -1,6 +1,6 @@
 import { v } from "convex/values"; // FIXED: Added missing import for validation
 import { mutation, query } from "./_generated/server"; // FIXED: Added missing query import
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 // create project
 export const create = mutation({
@@ -117,4 +117,83 @@ export const deleteProject = mutation({
             updatedAt: Date.now(),
         });
     },
+})
+
+
+// getting single project
+export const getProject = query({
+    args: { projectId: v.id("projects") },
+    handler: async (ctx, args) => {
+        const user = await ctx.runQuery(api.users.getCurrentUser)
+
+        const project = await ctx.db.get(args.projectId)
+
+        if (!project) {
+            throw new Error("project not found")
+        }
+
+        if (!user || project.userId !== user._id) {
+            throw new Error("Access Denied")
+        }
+        return project
+    },
+})
+
+
+// updating the project
+export const updateProject = mutation({
+    args: {
+        projectId: v.id("projects"),
+        canvasState: v.optional(v.any()),
+        width: v.optional(v.number()),
+        height: v.optional(v.number()),
+        currentImageURL: v.optional(v.string()),
+        thumbnailURL: v.optional(v.string()),
+        activeTransformation: v.optional(v.string()),
+        backgroundRemoved: v.optional(v.boolean()),
+    },
+    handler: async (ctx, args) => {
+        const user = await ctx.runQuery(api.users.getCurrentUser)
+
+        const project = await ctx.db.get(args.projectId)
+
+        if (!project) {
+            throw new Error("project not found")
+        }
+
+        if (!user || project.userId !== user._id) {
+            throw new Error("Access Denied")
+        }
+
+        const updateData = {
+            updatedAt: Date.now(),
+        }
+        // checking if the arguments are not undefined
+        if (args.canvasState !== undefined) {
+            updateData.canvasState = args.canvasState
+        }
+        if (args.width !== undefined) {
+            updateData.width = args.width
+        }
+        if (args.height !== undefined) {
+            updateData.height = args.height
+        }
+        if (args.currentImageURL !== undefined) {
+            updateData.currentImageURL = args.currentImageURL
+        }
+        if (args.thumbnailURL !== undefined) {
+            updateData.thumbnailURL = args.thumbnailURL
+        }
+        if (args.activeTransformation !== undefined) {
+            updateData.activeTransformation = args.activeTransformation
+        }
+        if (args.backgroundRemoved !== undefined) {
+            updateData.backgroundRemoved = args.backgroundRemoved
+        }
+
+        await ctx.db.patch(args.projectId, updateData)
+
+        return args.projectId
+    }
+
 })
