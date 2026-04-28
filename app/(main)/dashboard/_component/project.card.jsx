@@ -21,7 +21,7 @@ function ProjectCard({ project, onEdit }) {
         if (confirmed) {
 
             try {
-                await deleteProject({ id: project._id })
+                await deleteProject({ projectId: project._id })
                 toast.success("Project deleted successfully")
             } catch (error) {
                 console.error("Error deleting project:", error);
