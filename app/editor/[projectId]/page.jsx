@@ -7,7 +7,7 @@ import { CanvasContext } from '@/app/context/context';
 import { useConvexQuery } from '@/components/hooks/use-convex-query';
 import { api } from '@/convex/_generated/api';
 import { RingLoader } from 'react-spinners';
-import CanvasEditor from './_components/canvas';
+import CanvasEditor from './_components/tools/canvas';
 import EditorTopbar from './_components/editor-topbar';
 import EditorSidebar from './_components/editor-sidebar';
 

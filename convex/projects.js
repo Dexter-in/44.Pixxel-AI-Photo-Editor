@@ -124,16 +124,22 @@ export const deleteProject = mutation({
 export const getProject = query({
     args: { projectId: v.id("projects") },
     handler: async (ctx, args) => {
-        const user = await ctx.runQuery(api.users.getCurrentUser)
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) return null;
+
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+            .unique();
 
         const project = await ctx.db.get(args.projectId)
 
         if (!project) {
-            throw new Error("project not found")
+            return null;
         }
 
         if (!user || project.userId !== user._id) {
-            throw new Error("Access Denied")
+            return null;
         }
         return project
     },
@@ -153,7 +159,13 @@ export const updateProject = mutation({
         backgroundRemoved: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
-        const user = await ctx.runQuery(api.users.getCurrentUser)
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Not authenticated");
+
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+            .unique();
 
         const project = await ctx.db.get(args.projectId)
 

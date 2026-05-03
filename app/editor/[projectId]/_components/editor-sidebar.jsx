@@ -1,9 +1,11 @@
 import { useCanvas } from '@/app/context/context';
 import { Crop, Expand, Eye, Maximize2, Palette, Sliders, Text } from 'lucide-react';
 import React from 'react'
-import CropContent from './crop';
+import CropContent from './tools/crop';
 import ResizeControls from './resize';
-import { AdjustControls } from './Adjust';
+import { AdjustControls } from './tools/Adjust';
+import BackgroundControls from './tools/ai-background';
+import TextControl from './tools/text';
 
 
 const TOOL_CONFIGS = {
@@ -82,6 +84,10 @@ function renderToolContent(activeTool, project) {
             return <ResizeControls project={project} />;
         case "adjust":
             return <AdjustControls project={project} />;
+        case "background":
+            return <BackgroundControls project={project} />
+        case "text":
+            return <TextControl project={project} />
         default:
             return <div className="text-white">Select a tool to get started</div>;
     }
