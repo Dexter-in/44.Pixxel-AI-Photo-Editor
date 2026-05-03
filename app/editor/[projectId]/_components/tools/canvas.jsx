@@ -277,6 +277,25 @@ function CanvasEditor({ project }) {
     }, [canvasEditor, activeTool])
 
 
+    // Handle automatic tab switching when text is selected
+    useEffect(() => {
+        if (!canvasEditor || !onToolChange) return;
+
+        const handleSelection = (e) => {
+            const selectedObject = e.selected?.[0];
+            if (selectedObject && selectedObject.type === "i-text") {
+                onToolChange("text");
+            }
+        };
+
+        canvasEditor.on("selection:created", handleSelection);
+        canvasEditor.on("selection:updated", handleSelection);
+
+        return () => {
+            canvasEditor.off("selection:created", handleSelection);
+            canvasEditor.off("selection:updated", handleSelection);
+        };
+    }, [canvasEditor, onToolChange]);
 
 
 
