@@ -1,11 +1,15 @@
 " use client"
 import { useCanvas } from '@/app/context/context';
+import { useConvexQueryMutation } from '@/components/hooks/use-convex-query';
 import usePlanAccess from '@/components/hooks/use-plan-access';
 import { Button } from "@/components/ui/button";
 import { UpgradeModal } from '@/components/upgrade-model';
-import { ArrowLeft, Crop, Expand, Eye, Icon, Lock, Maximize2, Palette, RotateCcw, RotateCw, Sliders, Text } from 'lucide-react';
+import { api } from '@/convex/_generated/api';
+import { FabricImage } from 'fabric';
+import { ArrowLeft, Crop, Expand, Eye, Icon, Loader2, Lock, Maximize2, Palette, RefreshCcw, RotateCcw, RotateCw, Save, Sliders, Text } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
+import { toast } from 'sonner';
 
 const TOOLS = [
     {
@@ -51,6 +55,35 @@ const TOOLS = [
 
 
 
+const EXPORT_FORMATS = [
+    {
+        format: "PNG",
+        quality: 1.0,
+        label: "PNG (High Quality)",
+        extension: "png",
+    },
+    {
+        format: "JPEG",
+        quality: 0.9,
+        label: "JPEG (90% Quality)",
+        extension: "jpg",
+    },
+    {
+        format: "JPEG",
+        quality: 0.8,
+        label: "JPEG (80% Quality)",
+        extension: "jpg",
+    },
+    {
+        format: "WEBP",
+        quality: 0.9,
+        label: "WebP (90% Quality)",
+        extension: "webp",
+    },
+];
+
+
+
 
 function EditorTopbar({ project }) {
     const router = useRouter()
@@ -75,6 +108,99 @@ function EditorTopbar({ project }) {
         onToolChange(toolId)
     }
 
+    const { mutate: updateProject, isLoading: isSaving } = useConvexQueryMutation(
+        api.projects.updateProject
+    )
+
+
+
+
+    const handleResetToOriginal = async () => {
+        if (!canvasEditor || !project || !project.originalImageURL) {
+            toast.error("No original image found to reset to");
+            return;
+        }
+
+        try {
+
+            // Clear canvas and reset state
+            canvasEditor.clear();
+            canvasEditor.backgroundColor = "#ffffff";
+            canvasEditor.backgroundImage = null;
+
+            // Load original image
+            const fabricImage = await FabricImage.fromURL(project.originalImageURL, {
+                crossOrigin: "anonymous",
+            });
+
+            // Calculate proper scaling
+            const imgAspectRatio = fabricImage.width / fabricImage.height;
+            const canvasAspectRatio = project.width / project.height;
+            const scale =
+                imgAspectRatio > canvasAspectRatio
+                    ? project.width / fabricImage.width
+                    : project.height / fabricImage.height;
+
+            fabricImage.set({
+                left: project.width / 2,
+                top: project.height / 2,
+                originX: "center",
+                originY: "center",
+                scaleX: scale,
+                scaleY: scale,
+                selectable: true,
+                evented: true,
+            });
+
+            fabricImage.filters = [];
+            canvasEditor.add(fabricImage);
+            canvasEditor.centerObject(fabricImage);
+            canvasEditor.setActiveObject(fabricImage);
+            canvasEditor.requestRenderAll();
+
+            // Save the reset state
+            const canvasJSON = canvasEditor.toJSON();
+            await updateProject({
+                projectId: project._id,
+                canvasState: canvasJSON,
+                currentImageURL: project.originalImageURL,
+                activeTransformation: undefined,
+                backgroundRemoved: false,
+            });
+
+
+            toast.success("Canvas reset to original image");
+
+
+        } catch (error) {
+            console.error("Error resetting canvas:", error);
+            toast.error("Failed to reset canvas. Please try again.");
+
+
+        }
+    }
+
+
+    // Manual save functionality
+    const handleManualSave = async () => {
+        if (!canvasEditor || !project) {
+            toast.error("Canvas not ready for saving");
+            return;
+        }
+
+        try {
+            const canvasJSON = canvasEditor.toJSON();
+            await updateProject({
+                projectId: project._id,
+                canvasState: canvasJSON,
+            });
+            toast.success("Project saved successfully!");
+        } catch (error) {
+            console.error("Error saving project:", error);
+            toast.error("Failed to save project. Please try again.");
+
+        }
+    }
 
     return <>
         <div>
@@ -93,6 +219,55 @@ function EditorTopbar({ project }) {
                 <h1 className="font-extrabold capitalize">{project.title}</h1>
 
                 <div>
+
+                    <div className="flex items-center gap-3">
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleResetToOriginal}
+                            disabled={isSaving || !project.originalImageURL}
+                            className="gap-2"
+                        >
+                            {isSaving ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Resetting...
+                                </>
+                            ) : (
+                                <>
+                                    <RefreshCcw className="h-4 w-4" />
+                                    Reset
+                                </>
+                            )}
+                        </Button>
+
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={handleManualSave}
+                            disabled={isSaving || !canvasEditor}
+                            className="gap-2"
+                        >
+                            {isSaving ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4" />
+                                    Save
+                                </>
+                            )}
+                        </Button>
+
+
+
+
+
+                    </div>
+
 
 
                 </div>
