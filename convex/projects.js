@@ -1,18 +1,18 @@
-import { v } from "convex/values"; // FIXED: Added missing import for validation
-import { mutation, query } from "./_generated/server"; // FIXED: Added missing query import
-import { api, internal } from "./_generated/api";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 // create project
 export const create = mutation({
     // passing arguments
-    args: {
+     args: {
         title: v.string(),
-        originalImageURL: v.optional(v.string()), // FIXED: Matched schema naming (URL instead of url)
-        currentImageURL: v.optional(v.string()), // FIXED: Matched schema naming
-        thumbnailURL: v.optional(v.string()), // FIXED: Matched schema naming
+        originalImageURL: v.optional(v.string()),
+        currentImageURL: v.optional(v.string()),
+        thumbnailURL: v.optional(v.string()),
         width: v.number(),
         height: v.number(),
-        canvasState: v.optional(v.any()), // FIXED: Matched schema (canvasState instead of convaState)
+        canvasState: v.optional(v.any()),
+        folderId: v.optional(v.id("folders")), // Add this
     },
     handler: async (ctx, args) => {
         // FIXED: Replaced ctx.runQuery (not allowed in handlers) with direct DB lookup
@@ -47,7 +47,8 @@ export const create = mutation({
             width: args.width,
             height: args.height,
             canvasState: args.canvasState,
-            createdAt: Date.now(), // FIXED: Use Date.now() for v.number() fields
+            folderId: args.folderId, // Add this
+            createdAt: Date.now(),
             updatedAt: Date.now(),
         });
 
@@ -60,6 +61,26 @@ export const create = mutation({
         return projectId;
     }
 })
+
+export const getProjectsByFolder = query({
+    args: { folderId: v.optional(v.id("folders")) },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) return [];
+        
+        const user = await ctx.db.query("users").withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier)).unique();
+        if (!user) return [];
+        
+        if (!args.folderId) {
+            return await ctx.db.query("projects").withIndex("by_user_updatedAt", (q) => q.eq("userId", user._id)).order("desc").collect();
+        }
+        
+        const folder = await ctx.db.get(args.folderId);
+        if (!folder || folder.userId !== user._id) return [];
+        
+        return await ctx.db.query("projects").withIndex("by_folder", (q) => q.eq("folderId", args.folderId)).collect();
+    },
+});
 
 // getting user projects
 export const getUserProjects = query({
@@ -91,34 +112,29 @@ export const deleteProject = mutation({
         projectId: v.id("projects"),
     },
     handler: async (ctx, args) => {
-        // FIXED: Replaced invalid ctx.runQuery with direct DB lookup
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Unauthorized");
 
-        // getting user
         const user = await ctx.db
             .query("users")
             .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
             .unique();
-        // checking if user is found
+
         if (!user) throw new Error("User not found");
-        // getting the project
+
         const project = await ctx.db.get(args.projectId);
-        // checking if project is found
         if (!project || project.userId !== user._id) {
             throw new Error("Unauthorized or project not found");
         }
-        // deleting the project
+
         await ctx.db.delete(args.projectId);
 
-        // FIXED: Corrected user patch logic for deletion
         await ctx.db.patch(user._id, {
             projectsUsed: Math.max(0, user.projectsUsed - 1),
             updatedAt: Date.now(),
         });
     },
-})
-
+});
 
 // getting single project
 export const getProject = query({
@@ -132,19 +148,15 @@ export const getProject = query({
             .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
             .unique();
 
-        const project = await ctx.db.get(args.projectId)
+        const project = await ctx.db.get(args.projectId);
 
-        if (!project) {
+        if (!project || !user || project.userId !== user._id) {
             return null;
         }
 
-        if (!user || project.userId !== user._id) {
-            return null;
-        }
-        return project
+        return project;
     },
-})
-
+});
 
 // updating the project
 export const updateProject = mutation({
@@ -167,45 +179,48 @@ export const updateProject = mutation({
             .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
             .unique();
 
-        const project = await ctx.db.get(args.projectId)
+        const project = await ctx.db.get(args.projectId);
 
         if (!project) {
-            throw new Error("project not found")
+            throw new Error("project not found");
         }
 
         if (!user || project.userId !== user._id) {
-            throw new Error("Access Denied")
+            throw new Error("Access Denied");
         }
 
         const updateData = {
             updatedAt: Date.now(),
-        }
-        // checking if the arguments are not undefined
+        };
+
         if (args.canvasState !== undefined) {
-            updateData.canvasState = args.canvasState
+            updateData.canvasState = args.canvasState;
         }
         if (args.width !== undefined) {
-            updateData.width = args.width
+            updateData.width = args.width;
         }
         if (args.height !== undefined) {
-            updateData.height = args.height
+            updateData.height = args.height;
         }
         if (args.currentImageURL !== undefined) {
-            updateData.currentImageURL = args.currentImageURL
+            updateData.currentImageURL = args.currentImageURL;
         }
         if (args.thumbnailURL !== undefined) {
-            updateData.thumbnailURL = args.thumbnailURL
+            updateData.thumbnailURL = args.thumbnailURL;
         }
         if (args.activeTransformation !== undefined) {
-            updateData.activeTransformation = args.activeTransformation
+            updateData.activeTransformation = args.activeTransformation;
         }
         if (args.backgroundRemoved !== undefined) {
-            updateData.backgroundRemoved = args.backgroundRemoved
+            updateData.backgroundRemoved = args.backgroundRemoved;
         }
 
-        await ctx.db.patch(args.projectId, updateData)
+        await ctx.db.patch(args.projectId, updateData);
 
-        return args.projectId
-    }
+        return args.projectId;
+    },
 
-})
+    
+
+    
+});

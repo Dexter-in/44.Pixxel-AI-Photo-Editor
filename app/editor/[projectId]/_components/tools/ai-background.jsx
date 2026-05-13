@@ -241,7 +241,7 @@ const BackgroundControls = ({ project }) => {
                 </div>
 
                 <Button
-                    onClick={handleRemoveBackground}
+                    onClick={handleBackgroundRemoval}
                     disabled={processingMessage || !getMainImage()}
                     className="w-full"
                     variant="primary"

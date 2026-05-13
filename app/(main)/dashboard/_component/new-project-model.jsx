@@ -52,7 +52,7 @@ const getImageDimensions = (file) => {
     });
 };
 
-const NewProjectModal = ({ isOpen, onClose }) => {
+const NewProjectModal = ({ isOpen, onClose, folderId }) => {
     const [projectTitle, setProjectTitle] = useState("");
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -113,6 +113,7 @@ const NewProjectModal = ({ isOpen, onClose }) => {
                 width: uploadData.width || 800,
                 height: uploadData.height || 600,
                 canvasState: null,
+                ...(folderId && { folderId }),
             })
 
 
@@ -146,7 +147,7 @@ const NewProjectModal = ({ isOpen, onClose }) => {
             "image/*": [".png", ".jpg", ".jpeg", ".webp", ".gif"],
         },
         maxFiles: 1,
-        maxSize: 20 * 1024 * 1024,
+        maxSize: 20 * 1024 * 1024,  
     });
 
     return (
