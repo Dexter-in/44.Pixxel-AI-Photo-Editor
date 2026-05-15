@@ -4,7 +4,7 @@ import { useCanvas } from '@/app/context/context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FabricImage } from 'fabric/';
+import { FabricImage } from 'fabric';
 import { Download, ImageIcon, Loader2, Palette, Search, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { HexColorPicker } from 'react-colorful';

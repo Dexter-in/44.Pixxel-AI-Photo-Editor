@@ -1,6 +1,6 @@
 import { useCanvas } from '@/app/context/context';
 import { Button } from '@/components/ui/button';
-import { FabricImage, Rect } from 'fabric/';
+import { FabricImage, Rect } from 'fabric';
 import { CheckCheck, Crop, Maximize, RectangleHorizontal, RectangleVertical, Smartphone, Square, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 
