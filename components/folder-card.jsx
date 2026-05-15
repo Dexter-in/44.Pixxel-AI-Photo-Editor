@@ -71,17 +71,23 @@ export default function FolderCard({ folder, onOpen }) {
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onSelect={() => setIsRenameOpen(true)}>
+                <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    setIsRenameOpen(true)
+                  }}>
                     <Edit3 className="mr-2 h-4 w-4" /> Rename
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={handleDelete} className="text-red-400">
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    handleDelete(e)
+                  }} className="text-red-400">
                     <Trash2 className="mr-2 h-4 w-4" /> Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <CardDescription>Projects: {folder.projectCount || 0}</CardDescription>
+           
             <Button className="w-full mt-4">
               Open Folder <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
